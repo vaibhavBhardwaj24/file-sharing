@@ -1,0 +1,60 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Static and media files
+/staticfiles/
+/media/
+
+# Local settings (if applicable)
+local_settings.py
+
+# Virtual environments
+venv/
+env/
+ENV/
+*.env
+*.venv
+.Python
+
+# IDEs and editors
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Database 
+db.sqlite3
+
+# pip
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Coverage reports
+htmlcov/
+.coverage
+.tox/
+.nox/
+.coverage.*
+
+# pytest
+.pytest_cache/
+
+# mypy
+.mypy_cache/
+
+# PyCharm
+*.iml
+*.ipr
+*.iws
