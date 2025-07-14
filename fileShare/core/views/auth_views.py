@@ -9,17 +9,17 @@ from datetime import datetime, timedelta
 from django.conf import settings
 def tokens_for_user(user):
     access_payload = {
-        'user_id': str(user._id),
+        'user_id': str(user.uuid),  # Use .id, which is a UUID
         'username': user.username,
         'email': user.email,
         'is_admin': user.is_admin,
-        'exp': datetime.utcnow() + timedelta(minutes=15),
+        'exp': int((datetime.utcnow() + timedelta(minutes=600)).timestamp()),
         'type': 'access'
     }
 
     refresh_payload = {
-        'user_id': str(user.id),
-        'exp': datetime.utcnow() + timedelta(days=7),
+        'user_id': str(user.uuid),
+        'exp': int((datetime.utcnow() + timedelta(days=7)).timestamp()),
         'type': 'refresh'
     }
 
@@ -31,32 +31,9 @@ def tokens_for_user(user):
         'refresh_token': refresh_token
     }
 
-class OperatorLoginView(APIView):
-    def post(self, request):
-        email=request.data.get('email')
-        password=request.data.get('password')
-
-        if not email or not password:
-            return Response({'error': 'Please provide email and password'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        user=User.objects(email=email).first()
-        if not user:
-            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
-        if not user.is_admin:
-            return Response({'error': 'User is not an operator'}, status=status.HTTP_403_FORBIDDEN)
-        
-        if not check_password(password,user.password_hashed):
-            return Response({'error': 'Invalid password'}, status=status.HTTP_401_UNAUTHORIZED)
-        
-        tokens = tokens_for_user(user)   
-        
-        return Response({
-            'message': 'Login successful',
-            'access_token':tokens.get('access_token'),
-            'refresh_token':tokens.get('refresh_token'),
-            'role':'operator'}, status=status.HTTP_200_OK)
 
 class ClientSignupView(APIView):
+    authentication_classes=[]
     def post(self, request):
         email=request.data.get('email')
         password=request.data.get('password')
@@ -80,6 +57,7 @@ class ClientSignupView(APIView):
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 class ClientLoginView(APIView):
+    authentication_classes=[]
     def post(self,request):
         email=request.data.get('email')
         password=request.data.get('password')
@@ -95,10 +73,10 @@ class ClientLoginView(APIView):
             return Response({'error': 'Invalid password'}, status=status.HTTP_401_UNAUTHORIZED)
         
         tokens = tokens_for_user(user)   
-        
+        role = "operator" if user.is_admin else "client"
         return Response({
             'message': 'Login successful',
             'access_token':tokens.get('access_token'),
             'refresh_token':tokens.get('refresh_token'),
-            'role':'client'}, status=status.HTTP_200_OK)
+            'role':role}, status=status.HTTP_200_OK)
 

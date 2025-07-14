@@ -13,7 +13,6 @@ from mongoengine import connect
 from pathlib import Path
 from dotenv import load_dotenv
 import os
-import redis
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv()
@@ -37,7 +36,6 @@ connect(
     host=MONGO_DB_URI
 )
 
-REDIS_CONN=redis.from_url(os.getenv('REDIS_URL'))
 # Application definition
 
 INSTALLED_APPS = [
@@ -97,7 +95,15 @@ DATABASES = {
     }
 }
 
-
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": os.getenv("REDIS_URL", "redis://127.0.0.1:6379/1"),
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
+}
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
 

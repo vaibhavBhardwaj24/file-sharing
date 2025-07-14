@@ -16,7 +16,7 @@ def decode_jwt_token(token):
         return {'error': 'Invalid token'}
 
 class TestView(APIView):
-    permission_classes = [AllowAny]  
+    authentication_classes = [] 
 
     def get(self, request):
         auth_header = request.headers.get('Authorization')
