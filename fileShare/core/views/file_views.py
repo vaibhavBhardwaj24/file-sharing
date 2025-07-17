@@ -71,8 +71,8 @@ class GenerateFileLink(APIView):
                 return Response({'error':'No user found'},status=status.HTTP_404_NOT_FOUND)
             if user.is_admin:
                 return Response({'error':'Only client accounts are allowed'},status=status.HTTP_401_UNAUTHORIZED)
-            if not user.is_active:
-                return Response({'error':'Account not activated'},status=status.HTTP_401_UNAUTHORIZED)
+            # if not user.is_active:
+            #     return Response({'error':'Account not activated'},status=status.HTTP_401_UNAUTHORIZED)
             # if file is not found in mongodb return error
             file=File.objects(fileName=file_name).first()
             if not file:

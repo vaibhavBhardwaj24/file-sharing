@@ -1,42 +1,56 @@
 # Secure File Sharing System
 
-This project implements a secure file-sharing system between two different types of users: **Operation Users (Ops Users)** and **Client Users**. The system is built using Django and provides REST APIs for all major actions.
+This project implements a secure file-sharing system between two types of users: **Operator Users (Admins)** and **Client Users**. The backend is built with Django, MongoEngine (MongoDB), and Redis, and provides REST APIs for authentication, file upload, secure link generation, and file download.
+
+---
 
 ## Features
 
-### Ops User (Operation User)
+### Operator (Admin) User
 
-- **Login**: Authenticate as an Ops User.
-- **Upload File**: Upload files (only `.pptx`, `.docx`, `.xlsx` formats allowed).
+- **Login**: Authenticate as an operator (admin) user.
+- **Upload File**: Upload files (`.pptx`, `.docx`, `.xlsx` only).
 
 ### Client User
 
-- **Sign Up**: Register as a Client User. Returns an encrypted URL for further actions.
-- **Email Verification**: Receive a verification email to activate the account.
-- **Login**: Authenticate as a Client User.
-- **Download File**: Download files via a secure, encrypted URL (accessible only by Client Users).
-- **List Files**: View all files uploaded by Ops Users.
+- **Sign Up**: Register as a client user.
+- **Login**: Authenticate as a client user.
+- **List Files**: View all files uploaded by operators.
+- **Generate Download Link**: Request a secure, time-limited download link for a file.
+- **Download File**: Download files via a secure, temporary link.
 
-## Security Requirements
+---
 
+## Security
+
+- **Role-based Access**: Only operators can upload files; only clients can generate download links.
+- **File Type Restriction**: Only specific file types are allowed for upload.
+- **JWT Authentication**: All protected endpoints require a valid JWT token.
+- **Temporary Download Links**: Download links are valid for 10 minutes and are stored in Redis.
+- **No orphaned access**: If a user or file is missing, access is denied.
 - **File Upload Restrictions**: Only Ops Users can upload files, and only specific file types are allowed.
-- **Encrypted Download URLs**: Download links are encrypted and can only be accessed by authenticated Client Users.
-- **Access Control**: If any user other than the intended Client User tries to access a download URL, access is denied.
 
 ## API Endpoints
 
-### Ops User
+All endpoints are prefixed with `/api/`.
 
-- `POST /api/ops/login/` — Login as Ops User
-- `POST /api/ops/upload/` — Upload a file (pptx, docx, xlsx only)
+### Authentication
 
-### Client User
+- `POST /api/auth/signup/` — Client user signup
+- `POST /api/auth/login/` — Login (returns JWT and user role)
 
-- `POST /api/client/signup/` — Sign up as Client User (returns encrypted URL)
-- `GET /api/client/verify-email/` — Verify email via link
-- `POST /api/client/login/` — Login as Client User
-- `GET /api/client/files/` — List all uploaded files
-- `GET /api/client/download/<encrypted_url>/` — Download file via secure link
+### File Operations
+
+- `POST /api/file/upload/` — Upload a file (operator only, JWT required)
+- `POST /api/file/generateLink/` — Generate a secure download link for a file (client only, JWT required)
+- `GET /api/media/<file_id>/` — Download a file using a secure link (valid for 10 minutes)
+- `GET /api/links/` — List all files (client only, JWT required)
+
+### Test
+
+- `GET /api/test/` — Test endpoint for JWT validation
+
+---
 
 ## Setup Instructions
 
@@ -45,20 +59,27 @@ This project implements a secure file-sharing system between two different types
    ```bash
    pip install -r requirements.txt
    ```
-3. **Apply migrations**
-   ```bash
-   python manage.py migrate
+3. **Set up environment variables**  
+   Create a `.env` file with:
+   ```
+   MONGO_DB_NAME=your_db_name
+   MONGO_URI=mongodb://localhost:27017/your_db_name
+   REDIS_URL=redis://localhost:6379/0
    ```
 4. **Run the development server**
    ```bash
    python manage.py runserver
    ```
 
+---
+
 ## Notes
 
-- Ensure you have configured email backend settings in `settings.py` for email verification.
-- All sensitive actions are protected by authentication and role-based access control.
-- The system uses Django's built-in security features and custom logic for encrypted URLs.
+- Ensure MongoDB and Redis are running and accessible.
+- JWT secret is set via Django's `SECRET_KEY` in `settings.py`.
+- File uploads are stored in the `uploads/` directory.
+- Download links are managed via Redis and expire after 10 minutes.
+- The project uses custom JWT logic (not SimpleJWT) for authentication.
 
 ---
 
