@@ -1,5 +1,5 @@
 from django.urls import path
-from core.views.auth_views import  ClientLoginView, ClientSignupView
+from core.views.auth_views import  ClientLoginView, ClientSignupView,AccountActivation
 from core.views.file_views import DownloadFile, UploadFileView,GenerateFileLink,GetAllFiles
 from core.views.test_views import TestView
 urlpatterns = [
@@ -11,4 +11,5 @@ urlpatterns = [
     path('media/<str:file_id>/',DownloadFile.as_view(),name='download'),
     path('links/',GetAllFiles.as_view(),name="links"),
     path('test/',TestView.as_view(), name='test'),
+    path('verify-email/<str:token>/',AccountActivation.as_view(), name='verify-email'),  
 ]
